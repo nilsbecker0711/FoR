@@ -85,7 +85,6 @@ def FK_solve(q, flag):
 
   if flag == "ee":
     return transformations[len(transformations)-1]
-  print(transformations[len(transformations)-1])
   return transformations
     
 
@@ -122,7 +121,7 @@ def IK_solve(base_frame, ee_frame):
     theta_12 = theta_12 - 2 * pi
   theta_1.append(theta_11)
   theta_1.append(theta_12)
-  print("q1 =",theta_1)
+  
 
   r = sqrt((px ** 2) + (py ** 2))
   print("r =", r)
@@ -137,7 +136,7 @@ def IK_solve(base_frame, ee_frame):
   print("beta =", beta)
   theta_2.append(pi/2 - alpha - beta) 
   theta_2.append(pi/2 - alpha + beta)
-  print("q2 =", theta_2)  
+   
 
   gamma = arccos(round(((0.5 ** 2) + (0.1 ** 2) - (s ** 2)) / (2 * 0.5 * 0.1), 9))
   print("gamma =", gamma)
@@ -151,7 +150,7 @@ def IK_solve(base_frame, ee_frame):
 
   theta_3.append(theta_31)  
   theta_3.append(theta_32)
-  print("q3 =", theta_3)
+  
 
   #q4, q5, q6
   #print(np.matmul(np.matmul(np.matmul(np.matmul(np.matmul(rotz(0), trans(l1)), roty(pi)), trans(l2)), roty(0)), trans(0)))
@@ -172,14 +171,28 @@ def IK_solve(base_frame, ee_frame):
         c5 = r36a[0][0]
         theta_5.append(arccos(c5))
         #q4
-        
-  print("q5 =", theta_5)      
+        s4c5 = r36a[0][1]
+        #print("s4c5 = ", s4c5)
+        s4s5 = r36a[0][2]
+        #print("s4s5 = ", s4s5)
+        theta_4.append(arctan2(s4s5, s4c5))
+        #q6
+        s5c6 = r36a[0][1]
+        s5s6 = r36a[0][2]
+        theta_6.append(arctan2(s5s6, s5c6))
+
+  print("q1 =", theta_1)
+  print("q2 =", theta_2) 
+  print("q3 =", theta_3)
+  print("q4 =", theta_4)      
+  print("q5 =", theta_5)
+  print("q6 =", theta_6)      
         
     
 
 
 
-IK_solve(0,FK_solve([pi/4, pi, pi/2 ,pi/2, pi/2,0], "ee"))
+IK_solve(0,FK_solve([pi/4, pi/4, pi/2 ,0, pi/3 ,pi/2], "ee"))
 #IK_solve(0, transform_base([0,0,0], [pi,pi/2,pi/2,pi/2,pi,pi]))
 #IK_solve(0, FK_solve([0,0,0,0,0,0],"ee"))
 #print(FK_solve([0,0, pi/2,0,0,0], "ee"))
