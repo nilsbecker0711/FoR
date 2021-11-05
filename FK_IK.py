@@ -4,6 +4,8 @@ from numpy import arctan, arctan2, sin, cos, pi, sqrt, arccos
 l1 = [0, 0, 0.5]
 l2 = [0,0, 0.5]
 l3 = [0, 0, 0.1]
+q = [pi/4, pi/4, pi/2 ,pi/3, pi/3 ,1]
+
 l21 = [0, -0.5, 0]
 l32 = [0, -0.1, 0]
 lee = [0, 0, 0.01] #length between wrist joints
@@ -99,9 +101,12 @@ def transform_base(vec,q):
   q.append(newBase)
   return FK_solve(q, "ee")
 
-def IK_solve(base_frame, ee_frame):
+def IK_solve(base_frame, ee_frame, fromFK = False):
   '''
-    
+  :param fromFK: Indicates if the IK will be calculated based on a FK solution. If true, the found angles for q1-q6 can be validated.
+  :returns: If fromFK is false -> List of all possible angles q1-q6 which can be used to reach ee position
+            If fromFK is True -> List of all possible angles q1-q6 which can be used to reach ee position, plus list of validated angles
+                                 q1-q6 corresponding to FK solution
   '''
   print(ee_frame)
   px = ee_frame[0][3]
@@ -172,9 +177,7 @@ def IK_solve(base_frame, ee_frame):
         theta_5.append(arccos(c5))
         #q4
         s4c5 = r36a[1][0]
-        #print("s4c5 = ", s4c5)
         s4s5 = r36a[2][0]
-        #print("s4s5 = ", s4s5)
       
         theta_4.append(arctan2(s4s5, s4c5))
       
@@ -182,21 +185,45 @@ def IK_solve(base_frame, ee_frame):
         s5c6 = r36a[0][1]
         s5s6 = r36a[0][2]
        
-        theta_6.append(arctan2(s5s6, s5c6))
+        theta_6.append(arctan2(s5s6, -s5c6))
         
-
   print("q1 =", theta_1)
   print("q2 =", theta_2) 
   print("q3 =", theta_3)
   print("q4 =", theta_4)      
   print("q5 =", theta_5)
-  print("q6 =", theta_6)      
+  print("q6 =", theta_6) 
+
+  all_angles = [theta_1, theta_2, theta_3, theta_4, theta_5, theta_6]
+
+  if not fromFK:
+    return all_angles
+    
+  else:
+    angles =[]
+    
+    #find corresponding angles in q
+    i = 0
+    for i in range(len(all_angles)):
+      angles.append([])
+      for angle in all_angles[i]:
+        #rounding, because values change a bit over computations
+        if round(angle, 10) == round(q[i], 10):
+          angles[i] = angle
+          print(f"Found correct angle for q{i}")
+          break
+      if not angles[i]:
+        print(f"Failure for angle q{i}")
+    return (all_angles, angles)
+  
+
         
     
 
 
 
-IK_solve(0,FK_solve([pi/4, pi/4, pi/2 ,pi/3, pi/3 ,pi], "ee"))
+test = IK_solve(0,FK_solve(q, "ee"))
+print(test[1])
 #IK_solve(0, transform_base([0,0,0], [pi,pi/2,pi/2,pi/2,pi,pi]))
 #IK_solve(0, FK_solve([0,0,0,0,0,0],"ee"))
 #print(FK_solve([0,0, pi/2,0,0,0], "ee"))
