@@ -70,9 +70,19 @@ def FK_solve(q, flag):
     start = np.matmul(start, q[6])
     transformations.append(start)
   
-  for matrix in t:
-    start = np.matmul(start, matrix)
-    transformations.append(start)
+  start = np.matmul(np.matmul(start, rotz(q[0])), trans(l1))
+  transformations.append(start)
+  start = np.matmul(np.matmul(start, roty(q[1])), trans(l2))
+  transformations.append(start)
+  start = np.matmul(np.matmul(start, roty(q[2])), trans(l3))
+  transformations.append(start)
+  start = np.matmul(start, rotx(q[3]))
+  transformations.append(start)
+  start = np.matmul(start, rotz(q[4]))
+  transformations.append(start)
+  start = np.matmul(start, rotx(q[5]))
+  transformations.append(start)
+
   if flag == "ee":
     return transformations[len(transformations)-1]
   print(transformations[len(transformations)-1])
@@ -95,30 +105,42 @@ def IK_solve(base_frame, ee_frame):
     
   '''
   print(ee_frame)
-  print(ee_frame[1][3], ee_frame[0][3])
   px = ee_frame[0][3]
   py = ee_frame[1][3]
   pz = ee_frame[2][3]
-  theta_1 = arctan2(py, px)
+
+  #q1, q2, q3
+  theta_1 = []
+  theta_2 = []
+  theta_3 = []
+
+  theta_11 = arctan2(py, px)
+  theta_12  = arctan2(py, px) + pi
+  if theta_11 > pi:
+    theta_11 = theta_11 - pi
+  if theta_12 > pi:
+    theta_12 = theta_12 - 2 * pi
+  theta_1.append(theta_11)
+  theta_1.append(theta_12)
   print("q1 =",theta_1)
+
   r = sqrt((px ** 2) + (py ** 2))
-  print("r=", r)
+  print("r =", r)
   pz2 = pz - 0.5 #0.5 = length of l1
-  print("pz2=",pz2)
+  print("pz2 =",pz2)
   s = sqrt((r ** 2) + (pz2 ** 2))
   print("s =",s)
   alpha = arctan2((pz2 ** 2) , r)
-  print("alpha=", alpha)
+  print("alpha =", alpha)
   #print(round(((s ** 2) + (0.5 ** 2) - (0.1 ** 2)) / (2 * 0.5 * s), 10))
   beta =  arccos(round(((s ** 2) + (0.5 ** 2) - (0.1 ** 2)) / (2 * 0.5 * s), 10))
-  print("beta=", beta)
-  theta_21 = pi/2 - alpha - beta 
-  theta_22 = pi/2 - alpha + beta
-  print("q21 =", theta_21) 
-  print("q22 =", theta_22) 
-  #print(round(((0.5 ** 2) + (0.1 ** 2) - (s ** 2)) / (2 * 0.5 * 0.1), 10))
-  gamma = arccos(round(((0.5 ** 2) + (0.1 ** 2) - (s ** 2)) / (2 * 0.5 * 0.1), 10))
-  print("gamma=", gamma)
+  print("beta =", beta)
+  theta_2.append(pi/2 - alpha - beta) 
+  theta_2.append(pi/2 - alpha + beta)
+  print("q2 =", theta_2)  
+
+  gamma = arccos(round(((0.5 ** 2) + (0.1 ** 2) - (s ** 2)) / (2 * 0.5 * 0.1), 9))
+  print("gamma =", gamma)
   theta_31 =  pi - gamma
   theta_32 =  pi + gamma
   #print(theta_31)
@@ -126,11 +148,38 @@ def IK_solve(base_frame, ee_frame):
     theta_31 = (theta_31 - pi) * (-1)
   if theta_32 >= pi:
     theta_32 = (theta_32 - pi) * (-1)
-  print("q31 =", theta_31)
-  print("q32 =", theta_32)
-  
 
-IK_solve(0,FK_solve([pi/2, pi/2, pi/4 ,0,0,0], "ee"))
+  theta_3.append(theta_31)  
+  theta_3.append(theta_32)
+  print("q3 =", theta_3)
+
+  #q4, q5, q6
+  #print(np.matmul(np.matmul(np.matmul(np.matmul(np.matmul(rotz(0), trans(l1)), roty(pi)), trans(l2)), roty(0)), trans(0)))
+  #print()
+  theta_4 =[]
+  theta_5 = []
+  theta_6 = []
+  for q1 in theta_1:
+    for q2 in theta_2:
+      for q3 in theta_3:
+        r03 = np.matmul(np.matmul(np.matmul(np.matmul(np.matmul(rotz(q1), trans(l1)), roty(pi)), trans(l2)), roty(q3)), trans(q3))
+        r03 = np.matrix([r03[0][:3], r03[1][:3], r03[2][:3]])
+        r06 = np.matrix([ee_frame[0][:3], ee_frame[1][:3], ee_frame[2][:3]])
+        r03t = np.matrix.transpose(r03)
+        r36 = np.matmul(r03t, r06)
+        r36a = np.squeeze(np.asarray(r36))
+        #q5
+        c5 = r36a[0][0]
+        theta_5.append(arccos(c5))
+        #q4
+        
+  print("q5 =", theta_5)      
+        
+    
+
+
+
+IK_solve(0,FK_solve([pi/4, pi, pi/2 ,pi/2, pi/2,0], "ee"))
 #IK_solve(0, transform_base([0,0,0], [pi,pi/2,pi/2,pi/2,pi,pi]))
 #IK_solve(0, FK_solve([0,0,0,0,0,0],"ee"))
 #print(FK_solve([0,0, pi/2,0,0,0], "ee"))
