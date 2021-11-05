@@ -161,7 +161,7 @@ def IK_solve(base_frame, ee_frame):
   for q1 in theta_1:
     for q2 in theta_2:
       for q3 in theta_3:
-        r03 = np.matmul(np.matmul(np.matmul(np.matmul(np.matmul(rotz(q1), trans(l1)), roty(pi)), trans(l2)), roty(q3)), trans(q3))
+        r03 = np.matmul(np.matmul(np.matmul(np.matmul(np.matmul(rotz(q1), trans(l1)), roty(pi/4)), trans(l2)), roty(q3)), trans(q3))
         r03 = np.matrix([r03[0][:3], r03[1][:3], r03[2][:3]])
         r06 = np.matrix([ee_frame[0][:3], ee_frame[1][:3], ee_frame[2][:3]])
         r03t = np.matrix.transpose(r03)
@@ -171,15 +171,19 @@ def IK_solve(base_frame, ee_frame):
         c5 = r36a[0][0]
         theta_5.append(arccos(c5))
         #q4
-        s4c5 = r36a[0][1]
+        s4c5 = r36a[1][0]
         #print("s4c5 = ", s4c5)
-        s4s5 = r36a[0][2]
+        s4s5 = r36a[2][0]
         #print("s4s5 = ", s4s5)
+      
         theta_4.append(arctan2(s4s5, s4c5))
+      
         #q6
         s5c6 = r36a[0][1]
         s5s6 = r36a[0][2]
+       
         theta_6.append(arctan2(s5s6, s5c6))
+        
 
   print("q1 =", theta_1)
   print("q2 =", theta_2) 
@@ -192,7 +196,7 @@ def IK_solve(base_frame, ee_frame):
 
 
 
-IK_solve(0,FK_solve([pi/4, pi/4, pi/2 ,0, pi/3 ,pi/2], "ee"))
+IK_solve(0,FK_solve([pi/4, pi/4, pi/2 ,pi/3, pi/3 ,pi], "ee"))
 #IK_solve(0, transform_base([0,0,0], [pi,pi/2,pi/2,pi/2,pi,pi]))
 #IK_solve(0, FK_solve([0,0,0,0,0,0],"ee"))
 #print(FK_solve([0,0, pi/2,0,0,0], "ee"))
