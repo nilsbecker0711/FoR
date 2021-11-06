@@ -171,7 +171,7 @@ def IK_solve(base_frame, ee_frame, fromFK = False):
   for q1 in theta_1:
     for q2 in theta_2:
       for q3 in theta_3:
-        r03 = np.matmul(np.matmul(np.matmul(np.matmul(np.matmul(rotz(q1), trans(l1)), roty(pi/2)), trans(l2)), roty(q3)), trans(q3))
+        r03 = np.matmul(np.matmul(np.matmul(np.matmul(np.matmul(rotz(q1), trans(l1)), roty(pi/2)), trans(l2)), roty(q3)), trans(l3))
         r03 = np.matrix([r03[0][:3], r03[1][:3], r03[2][:3]])
         r06 = np.matrix([ee_frame[0][:3], ee_frame[1][:3], ee_frame[2][:3]])
         r03t = np.matrix.transpose(r03)
