@@ -4,7 +4,8 @@ from numpy import arctan, arctan2, sin, cos, pi, sqrt, arccos
 l1 = [0, 0, 0.5]
 l2 = [0,0, 0.5]
 l3 = [0, 0, 0.1]
-q = [pi/4, pi/4, pi/2 ,pi/3, pi/3 ,1]
+q = [0, pi/2, 0, 0, 0, 0]
+q = [pi/4, pi/2, pi/4, pi/4, pi/4, pi/4]
 
 l21 = [0, -0.5, 0]
 l32 = [0, -0.1, 0]
@@ -139,11 +140,13 @@ def IK_solve(base_frame, ee_frame, fromFK = False):
   #print(round(((s ** 2) + (0.5 ** 2) - (0.1 ** 2)) / (2 * 0.5 * s), 10))
   beta =  arccos(round(((s ** 2) + (0.5 ** 2) - (0.1 ** 2)) / (2 * 0.5 * s), 10))
   print("beta =", beta)
+  
   theta_2.append(pi/2 - alpha - beta) 
   theta_2.append(pi/2 - alpha + beta)
    
 
   gamma = arccos(round(((0.5 ** 2) + (0.1 ** 2) - (s ** 2)) / (2 * 0.5 * 0.1), 9))
+  #gamma = arccos(((px ** 2) + (py ** 2) - (0.5 ** 2) - (0.1 ** 2)) / (0.5 * 0.1))
   print("gamma =", gamma)
   theta_31 =  pi - gamma
   theta_32 =  pi + gamma
@@ -152,10 +155,12 @@ def IK_solve(base_frame, ee_frame, fromFK = False):
     theta_31 = (theta_31 - pi) * (-1)
   if theta_32 >= pi:
     theta_32 = (theta_32 - pi) * (-1)
-
+  
   theta_3.append(theta_31)  
   theta_3.append(theta_32)
   
+  theta_21 = (-1) * arctan((0.5*sin(theta_31)) /  (0.5 + 0.5 * cos(theta_32)))
+  print(theta_21)
 
   #q4, q5, q6
   #print(np.matmul(np.matmul(np.matmul(np.matmul(np.matmul(rotz(0), trans(l1)), roty(pi)), trans(l2)), roty(0)), trans(0)))
@@ -166,7 +171,7 @@ def IK_solve(base_frame, ee_frame, fromFK = False):
   for q1 in theta_1:
     for q2 in theta_2:
       for q3 in theta_3:
-        r03 = np.matmul(np.matmul(np.matmul(np.matmul(np.matmul(rotz(q1), trans(l1)), roty(pi/4)), trans(l2)), roty(q3)), trans(q3))
+        r03 = np.matmul(np.matmul(np.matmul(np.matmul(np.matmul(rotz(q1), trans(l1)), roty(pi/2)), trans(l2)), roty(q3)), trans(q3))
         r03 = np.matrix([r03[0][:3], r03[1][:3], r03[2][:3]])
         r06 = np.matrix([ee_frame[0][:3], ee_frame[1][:3], ee_frame[2][:3]])
         r03t = np.matrix.transpose(r03)
@@ -198,7 +203,7 @@ def IK_solve(base_frame, ee_frame, fromFK = False):
 
   if not fromFK:
     return all_angles
-    
+
   else:
     angles =[]
     
@@ -208,12 +213,18 @@ def IK_solve(base_frame, ee_frame, fromFK = False):
       angles.append([])
       for angle in all_angles[i]:
         #rounding, because values change a bit over computations
-        if round(angle, 10) == round(q[i], 10):
+        if round(angle, 5) == round(q[i], 5):
           angles[i] = angle
           print(f"Found correct angle for q{i}")
           break
-      if not angles[i]:
-        print(f"Failure for angle q{i}")
+        elif round(angle, 5) == round(q[i] + pi, 5):
+          angles[i] = angle
+          print(f"Found correct angle for q{i}")
+          break
+        elif round(angle, 5) == round(q[i] - pi, 5):
+          angles[i] = angle
+          print(f"Found correct angle for q{i}")
+          break
     return (all_angles, angles)
   
 
@@ -222,7 +233,7 @@ def IK_solve(base_frame, ee_frame, fromFK = False):
 
 
 
-test = IK_solve(0,FK_solve(q, "ee"))
+test = IK_solve(0,FK_solve(q, "ee"), fromFK=True)
 print(test[1])
 #IK_solve(0, transform_base([0,0,0], [pi,pi/2,pi/2,pi/2,pi,pi]))
 #IK_solve(0, FK_solve([0,0,0,0,0,0],"ee"))
