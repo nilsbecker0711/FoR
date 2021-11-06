@@ -184,7 +184,14 @@ class Robot:
         :param angles: List of angle lists
         :returns: ee frame after all transformations are done
         '''
-        transformations = len(angles)
+        if len(angles) == 0:
+            return self.transformations[len(self.transformations) - 1]
+        else:
+            self.q = angles[0]
+            self.FK_solve()
+            angles.pop()
+            self.multiple_FK(angles)
+
 
     def extract_plot_points(self, serial): 
         xs, ys, zs = [],[],[]
@@ -239,5 +246,7 @@ class Robot:
 
 r = Robot([pi/4, pi/4, pi/4, pi/4, pi/4, pi/4], [0, 0, 0.5], [0, 0, 0.5], [0, 0, 0.1])
 r.FK_solve()
+r.plot()
+r.multiple_FK([[0, pi/2, 0, pi/4, pi/2, pi/4], [pi/2, pi/2, 0, pi/2, pi/4, pi/4]])
 r.plot()
          
