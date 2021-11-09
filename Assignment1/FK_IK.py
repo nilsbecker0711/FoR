@@ -4,7 +4,7 @@ from numpy import arctan, arctan2, sin, cos, pi, sqrt, arccos
 l1 = [0, 0, 0.5]
 l2 = [0,0, 0.5]
 l3 = [0, 0, 0.1]
-q = [0, pi/2, 0, 0, 0, 0]
+#q = [0, pi/2, 0, 0, 0, 0]
 q = [pi/4, pi/2, pi/4, pi/4, pi/4, pi/4]
 
 l21 = [0, -0.5, 0]
@@ -171,7 +171,7 @@ def IK_solve(base_frame, ee_frame, fromFK = False):
   for q1 in theta_1:
     for q2 in theta_2:
       for q3 in theta_3:
-        r03 = np.matmul(np.matmul(np.matmul(np.matmul(np.matmul(rotz(q1), trans(l1)), roty(pi/2)), trans(l2)), roty(q3)), trans(l3))
+        r03 = np.matmul(np.matmul(np.matmul(np.matmul(np.matmul(rotz(q1), trans(l1)), roty(q2)), trans(l2)), roty(q3)), trans(l3))
         r03 = np.matrix([r03[0][:3], r03[1][:3], r03[2][:3]])
         r06 = np.matrix([ee_frame[0][:3], ee_frame[1][:3], ee_frame[2][:3]])
         r03t = np.matrix.transpose(r03)
@@ -231,10 +231,13 @@ def IK_solve(base_frame, ee_frame, fromFK = False):
         
     
 
+#can be used for testing
 
-
-test = IK_solve(0,FK_solve(q, "ee"), fromFK=True)
-print(test[1])
+#print(transform_base([0,0,1], q))
+#test = IK_solve(0,FK_solve(q, "ee"))
+#print(test)
+#test = IK_solve(0,FK_solve(q, "ee"), fromFK= True)
+#print(test[1])
 #IK_solve(0, transform_base([0,0,0], [pi,pi/2,pi/2,pi/2,pi,pi]))
 #IK_solve(0, FK_solve([0,0,0,0,0,0],"ee"))
 #print(FK_solve([0,0, pi/2,0,0,0], "ee"))

@@ -1,0 +1,158 @@
+\documentclass{article}
+\usepackage{graphicx}
+\graphicspath{ {c:/users/Nils Becker/downloads/} }
+\usepackage{amsmath}
+
+\title{Report Assignment 1 -  Kinematics}
+\date{Fundamentals of Robotics - FS 2021\\-\\November 6$^{th}$ 2021}
+\author{Nils Becker}
+
+\begin{document}
+  \maketitle
+  \newpage
+  \section{Robot description}
+  \subsection{Selected Robot}
+  	The chosen robot is a Antropomorphic robot which provides 6 degrees of freedom with a spherical wrist.
+  \subsection{Wrist configuration}
+  The wrist of the robot's arm follows rotation around XZX axes. As the wrist is responible for the rotation of the endeffector, the selected configuration must ensure, that all rotations can be achieved. Rotations about first the X axis, then about the new Z = Z' axis and then about the new X = X" axis satisfies this requirement.
+  \subsection{Model}
+  \includegraphics[scale=0.08]{for}
+  \newpage
+  \section{Kinematics}
+  \subsection{Forward Kinematics}
+  Forward Kinematics is solved by using Rotation- and Translation matrices directly from the zero configuration.
+
+  \begin{equation}
+  $$T = T$_{Base}$R$_{Z}$(q1)T$_{Z}$(l1)R$_{Y}$(q2)T$_{Z}$(l2)R$_{Y}$(q3)T$_{Z}$(l3)R$_{X}$(q4)R$_{X}$(q5)R$_{X}$(q6)T$_{Tool}$$$
+  \end{equation}
+  
+  \subsection{Inverse Kinematics}
+  To compute all possible input angles given the endeffector pose, the following procedure is applied.\\
+  \\
+  Let's say the endeffector position is given by a matrix M of form:
+  $$
+	\begin{pmatrix}
+	nx&sx&ax&px\\
+	ny&sy&ay&py\\
+	nz&sz&az&pz\\
+	0&0&0&1
+	\end{pmatrix}
+	$$
+  \subsubsection{Finding q1}
+  To find q1, we can compute atan2(py, px). This gives us one solution. To find the second solution, we can add ${\pi}$ to the first solution.
+   \begin{equation}
+   	q1_{1} = atan2(py,px) 
+   \end{equation}
+   \begin{equation}
+   q1_{2} = atan2(py,px) + \pi
+   \end{equation}
+   
+   \subsubsection{Finding q2}
+   \begin{equation}
+   q2_{1} = \pi/2 - \alpha - \beta 
+   \end{equation}
+   \begin{equation}
+   q2_{2} = \pi/2 - \alpha + \beta
+   \end{equation}
+    To compute ${\alpha}$ and ${\beta}$ we use the following equations:
+    \begin{equation}
+    \alpha = atan2((pz-l1)^2, \sqrt{(px^2 + py^2)})
+    \end{equation}
+    \begin{equation}
+    \beta = acos((s^2 + l2^2 + l3^2)/ (2*l2*s^2) 
+    \end{equation}
+    \begin{equation}
+    s = (pz-l1)^2 + \sqrt{(px^2 + py^2)}
+    \end{equation}
+	\subsubsection{Finding q3}
+	\begin{equation}
+	q3_{1} = \pi - \gamma
+	\end{equation}
+	\begin{equation}
+	q3_{2} = \pi + \gamma
+	\end{equation}
+	To compute ${\gamma}$ we use the following equation:
+	\begin{equation}
+	\gamma = acos((l2^2+l3^2-s^2)/(2*l2*l3))
+	\end{equation}
+	\subsubsection{Finding q4, q5, q6}
+	Note that 3x3 rotaion matrices will be used.\\\\
+	It applies:
+	\begin{equation}
+	^{3}R_{6} = ^{0}R^{\top}_{3} * ^{0}R_{6}
+	\end{equation}
+	The matrix $^{3}R_{6}$ will be of form:
+	$$
+	\begin{pmatrix}
+	c5&-s5c6&s5s6\\
+	c4s5&c4c5c6&-s4c6-c4c5s6&\\
+	s4s5&c4s6+s4c5c6&c4c6-s4c5s6&\\
+	\end{pmatrix}
+	$$
+	While the values will be determined by the used q1-q3.\\
+	\\The values q5 can thus be computed by:
+	\begin{equation}
+	q5 = acos(c5)
+	\end{equation}
+	The values of q4 will be: 
+	\begin{equation}
+	q4 = atan2(s4s5, c4s5)
+	\end{equation}
+	And the values of q6 will be:
+	\begin{equation}
+	q6 = atan2(s5s6, -s5c6)
+	\end{equation}
+	\newpage
+	\section{Code}
+	First of all, the my code computes the value of q2 in Inverse Kinematics wrong. Therefore q4, q5, q6 will be computed wrong, because their calculation is based on q2. If you manually put the correct value for q2 in line 162 of the code, q4, q5 and q6 will be computed correctly. 
+	\subsection{Code Output}
+	Let q1 - q6 be: q1 = ${\pi/4}$, q2 = ${\pi/2}$, q3 = ${\pi/4}$, q4 = ${\pi/4}$, q5 = ${\pi/4}$, q6 = ${\pi/4}$\\\\ And l1 - l3:  l1 = 0.5, l2 = 0.5, l3 = 0.1
+	\subsubsection{Forward Kinematics}
+	For q - q6 and l1 - l3 we get: \\
+	\\
+	\includegraphics[scale=0.5]{p1}
+	\subsubsection{Transform Base}
+	For q1 -q6, l1 - l3 and a translation of 1 in Z direction we get:
+	\\
+	\includegraphics[scale=0.5]{p2}
+	\newpage
+	\subsubsection{Inverse Kinematics}
+	For the matrix calculated in Forward Kinematics we get the following solution if we use the (wrongly calculated) q2:\\
+	\\
+	\includegraphics[scale=0.5]{p3}\\
+	\\
+	And for a corrected q2:\\
+	\\
+	\includegraphics[scale=0.5]{p4}
+	\newpage
+	\subsection{Code Validation}
+	For the computation q1 - q6 and l1 - l3 will be used again.\\
+	\\Again we look at the computed and corrected q2 seperatly. For the computed q2 IK will find the correct angles for q1 and q3 as expected:\\
+	\\
+	\includegraphics[scale=0.5]{p5}\\
+	\\
+	For the corrected q2, all angles except of q2 will be found correctly:\\
+	\\
+	\includegraphics[scale=0.5]{p6}
+	\newpage
+	\subsection{Addidtional Functionalities}
+	\subsubsection{Parameter "fromFK" for Inverse Kinematics}
+	For the function IKsolve the additional parameter fromFK indicates if the Inverse Kinematics will be solved based on previous Forward Kinematics solve. Therefore, the input angles q1-q6 are well defined and can be later verified. This helps to find the excact angles for q1-q6 and not just a list of all possible solutions. If not set to True, fromFK will be False and the output of this function will be a list of all possible soultions.\\\\
+	Important: If fromFK is used, the list of input angles have to be saved in global variable q. If not, the angles can not be verified.
+	\subsection{Class "Robot"}
+	The file "Robot.py" holds a robot class. This class will be initialized with a list of  6 input angles and a list of 3 link lengths. From this value it will generate Antropomorphic robot with a spherical XZX wrist. \\
+	\\
+	In this class Forward- and Inverse Kinematics can be calculated. Furthermore, it can perform a series of Forward Kinematics as well as plot the robot. \\\\Running Robot.py will demonstrate a plot for a robot, then apply a series of Forward Kinematics and then a plot of the new robot position. 
+	\subsubsection{Plotting}
+	The function plot plots the current robot configuration into a 3d-space.\\\\
+	For q1 = q2 = q3 = q4 = q5 = q6 = ${\pi/4}$ and l1 = 0.5, l2 = 0.5, l3 = 0.1 \\\\We get this plot:\\\\
+	\includegraphics[scale=0.34]{p7}
+	\subsubsection{Multiple Forward Kinematics}
+	With this function a series of Forward Kinematics can be calculated.\\\\ 
+	Let l1 = 0.5, l2 = 0.5, l3 = 0.1\\\\
+	The first list of input angles: [0, ${\pi/2}$, 0, ${\pi/4}$, ${\pi/2}$, ${\pi/4}$] and\\\\
+	The second list of input angles: [${\pi/2}$, ${\pi/2}$, 0, ${\pi/2}$, ${\pi/4}$, ${\pi/4}$]\\\\
+	Plotting the calculated robot configuration gives:\\\\
+	\includegraphics[scale=0.34]{p8}
+	
+\end{document}
