@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.23 (MiKTeX 21.8) (preloaded format=pdflatex 2021.11.6)  11 NOV 2021 17:36
+This is pdfTeX, Version 3.141592653-2.6-1.40.23 (MiKTeX 21.8) (preloaded format=pdflatex 2021.11.6)  11 NOV 2021 18:29
 entering extended mode
 **./Dif_Kinematics.tex
 (Dif_Kinematics.tex
@@ -106,8 +106,7 @@ LaTeX Info: Redefining \] on input line 2924.
 File: l3backend-pdftex.def 2021-08-04 L3 backend support: PDF output (pdfTeX)
 \l__color_backend_stack_int=\count268
 \l__pdf_internal_box=\box52
-)
-No file Dif_Kinematics.aux.
+) (Dif_Kinematics.aux)
 \openout1 = `Dif_Kinematics.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 10.
@@ -124,6 +123,7 @@ LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 10.
 LaTeX Font Info:    ... okay on input line 10.
 LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 10.
 LaTeX Font Info:    ... okay on input line 10.
+
 (D:\MiKTeX\tex/context/base/mkii\supp-pdf.mkii
 [Loading MPS to PDF converter (version 2006.09.02).]
 \scratchcounter=\count269
@@ -180,22 +180,43 @@ G,.JBIG2,.JB2,.eps]
 File: epstopdf-sys.cfg 2021/03/18 v2.0 Configuration of epstopdf for MiKTeX
 )) [1
 
-{C:/Users/Nils Becker/AppData/Local/MiKTeX/pdftex/config/pdftex.map}] (Dif_Kine
-matics.aux) ) 
+{C:/Users/Nils Becker/AppData/Local/MiKTeX/pdftex/config/pdftex.map}]
+<c:/users/Nils Becker/downloads//for.jpg, id=9, 3467.95625pt x 4625.28pt>
+File: c:/users/Nils Becker/downloads//for.jpg Graphic file (type jpg)
+<use c:/users/Nils Becker/downloads//for.jpg>
+Package pdftex.def Info: c:/users/Nils Becker/downloads//for.jpg  used on input
+ line 17.
+(pdftex.def)             Requested size: 312.1026pt x 416.25725pt.
+ [2 <c:/users/Nils Becker/downloads//for.jpg>]
+Underfull \hbox (badness 10000) in paragraph at lines 40--43
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 40--43
+
+ []
+
+[3] (Dif_Kinematics.aux) ) 
 Here is how much of TeX's memory you used:
- 2360 strings out of 478927
- 33410 string characters out of 2869000
- 330642 words of memory out of 3000000
- 20210 multiletter control sequences out of 15000+600000
- 407139 words of font info for 40 fonts, out of 8000000 for 9000
+ 2385 strings out of 478927
+ 33987 string characters out of 2869000
+ 337633 words of memory out of 3000000
+ 20228 multiletter control sequences out of 15000+600000
+ 408505 words of font info for 45 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 61i,6n,70p,243b,193s stack positions out of 5000i,500n,10000p,200000b,80000s
-<D:/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi8.pfb><D:/MiKTeX/fon
-ts/type1/public/amsfonts/cm/cmr10.pfb><D:/MiKTeX/fonts/type1/public/amsfonts/cm
-/cmr12.pfb><D:/MiKTeX/fonts/type1/public/amsfonts/cm/cmr17.pfb>
-Output written on Dif_Kinematics.pdf (1 page, 43753 bytes).
+ 61i,7n,70p,243b,193s stack positions out of 5000i,500n,10000p,200000b,80000s
+<D:/MiKTeX/fonts/type1/public/amsfonts/cm/cmbx12.pfb>
+<D:/MiKTeX/fonts/type1/public/amsfonts/cm/cmex10.pfb><D:/MiKTeX/fonts/type1/pub
+lic/amsfonts/cm/cmmi10.pfb><D:/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi7.pfb>
+<D:/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi8.pfb><D:/MiKTeX/fonts/type1/publ
+ic/amsfonts/cm/cmr10.pfb><D:/MiKTeX/fonts/type1/public/amsfonts/cm/cmr12.pfb><D
+:/MiKTeX/fonts/type1/public/amsfonts/cm/cmr17.pfb><D:/MiKTeX/fonts/type1/public
+/amsfonts/cm/cmr7.pfb><D:/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy10.pfb><D:/
+MiKTeX/fonts/type1/public/amsfonts/cm/cmsy7.pfb>
+Output written on Dif_Kinematics.pdf (3 pages, 2191845 bytes).
 PDF statistics:
- 26 PDF objects out of 1000 (max. 8388607)
+ 68 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 500000)
- 1 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 6 words of extra memory for PDF output out of 10000 (max. 10000000)
 

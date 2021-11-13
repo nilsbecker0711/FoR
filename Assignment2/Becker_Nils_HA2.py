@@ -59,6 +59,9 @@ def cartesian_vel(j, q_dot):
     '''
     return np.transpose(np.matmul(j, q_dot))
 
+
+#test
+'''
 #get a forward kinematics solution
 l1 = [0, 0, 0.5]
 l2 = [0,0, 0.5]
@@ -73,3 +76,4 @@ print(j)
 print(check_singular(j))
 q_dot = np.array([1,2,3,4,5,6]).reshape(6,)
 print(cartesian_vel(j, q_dot))
+'''
