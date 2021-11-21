@@ -2,7 +2,15 @@ import numpy as np
 from numpy import pi, sqrt
 from matplotlib.pyplot import *
 
-def draw_plot(t0, tb, tf, T, q_param):
+def trapezoidal_trajectory(q_param, t_param):
+    '''
+    Method for plotting angle, velocity and acceleration for one joint.
+    :param t_param: [t0, tau, T, tf]
+    :param q_param:[q0, qf, dq_m, ddq_m]
+    '''
+
+    t0, tau, T, tf = t_param
+    tb = T - tau
     q0, qf, dq_m, ddq_m = q_param
     t = np.linspace(t0,tf, int(3E3))
 
@@ -58,7 +66,6 @@ def draw_plot(t0, tb, tf, T, q_param):
     vlines([tb,T], 0, max(q)+10, linestyles='--', linewidth=2)
     legend()
 
-
     subplot(313)
     plot(t,a, linewidth=3, label="a")
     xlabel('t (s)', fontsize=10)
@@ -70,13 +77,14 @@ def draw_plot(t0, tb, tf, T, q_param):
     vlines([tb,T], min(a)-1, max(a)+1, linestyles='--', linewidth=2)
     legend()
 
-
     show()
+
+    return t, q, v, a
 
 def trajectory_time(q_params, t0):
     '''
     Perform tracetory planning for a single joint.
-    :returns: t_params = [t0, tau, T, tf], where tau = dq_max / ddq_max and T = dq / dq_max 
+    :returns: t_params = [t0, tau, T, tf]
     '''
     q0, qf, dq_m, ddq_m = q_params
     dq = qf - q0
@@ -92,20 +100,60 @@ def trajectory_time(q_params, t0):
     else: #trapez
         tb = dq_m/ddq_m
         T = dq/dq_m
-        tf = T+tb
-        tau = T - tf 
+        tf = T + tb
+        tau = T - tb
 
-    draw_plot(t0, tb, tf, T, q_params)
     return [t0, tau, T, tf]
 
+
+def time_sync(q_params_list):
+    '''
+    Synchronizes motion through all 6 joints
+    '''
+    
+    t0 = 0
+    taus = []
+    tbs = []
+
+    for p in q_params_list:
+        current = trajectory_time(p, 0)
+        tau = current[1]
+        taus.append(tau)
+        tbs.append(current[2] - tau)
+
+    tau = max(taus)
+    tb = max(tbs)
+    print(f'Rise time {tb}')
+    T = tb + tau
+    tf = T + tb
+    print(f'Total trajectory time: {tf}')
+    t_params = [t0, tau, T, tf]
+
+    #update velocities and acceleration
+    i = 1
+    for p in q_params_list:
+        dq_new = (p[1] - p[0]) / T
+        ddq_new = dq_new / tb
+        print(f'Velocity of joint {i} changed form {p[2]} to {dq_new}')
+        print(f'Acceleration of joint {i} changed form {p[3]} to {ddq_new}')
+        p[2:] = [dq_new, ddq_new]
+        trapezoidal_trajectory(p, t_params)
+        i += 1
+
+
+    
+    
+
 q_params1 = [0, 90, 8, 4]
-q_params2 = [10, 170, 50, 10]
-q_params3 = [50, 100, 5, 2]
-q_params4 = [0, 270, 6, 6]
-q_params5 = [180, 359, 10, 5]
+q_params2 = [10, 170, 7, 5]
+q_params3 = [50, 100, 7, 4]
+q_params4 = [0, 270, 6, 4]
+q_params5 = [180, 359, 6, 5]
 q_params6 = [0, 180, 7, 8]
 
 t0 = 0
 q_params_list = [q_params1, q_params2, q_params3, q_params4, q_params5, q_params6]
 for p in q_params_list:
-    trajectory_time(p, 0)
+    pass
+time_sync(q_params_list)
+
