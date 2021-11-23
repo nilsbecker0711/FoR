@@ -98,8 +98,8 @@ def trajectory_time(q_params, t0):
         T = tf - tb
         tau = T - tb
     else: #trapez
-        tb = dq_m/ddq_m
-        T = dq/dq_m
+        tb = dq_m / ddq_m
+        T = dq / dq_m
         tf = T + tb
         tau = T - tb
 
@@ -116,7 +116,7 @@ def time_sync(q_params_list):
     tbs = []
 
     for p in q_params_list:
-        current = trajectory_time(p, 0)
+        current = trajectory_time(p, t0)
         tau = current[1]
         taus.append(tau)
         tbs.append(current[2] - tau)
@@ -126,25 +126,51 @@ def time_sync(q_params_list):
     print(f'Rise time {tb}')
     T = tb + tau
     tf = T + tb
-    print(f'Total trajectory time: {tf}')
+    print(f'Total trajectory time: {tf}s')
     t_params = [t0, tau, T, tf]
+
 
     #update velocities and acceleration
     i = 1
+    new_q_params_list =[]
     for p in q_params_list:
         dq_new = (p[1] - p[0]) / T
         ddq_new = dq_new / tb
-        print(f'Velocity of joint {i} changed form {p[2]} to {dq_new}')
-        print(f'Acceleration of joint {i} changed form {p[3]} to {ddq_new}')
+        #print(f'Velocity of joint {i} changed form {p[2]} to {dq_new}')
+        #print(f'Acceleration of joint {i} changed form {p[3]} to {ddq_new}')
         p[2:] = [dq_new, ddq_new]
-        trapezoidal_trajectory(p, t_params)
+        #show new plots for each joint
+        #trapezoidal_trajectory(p, t_params)
+        new_q_params_list.append(p)
         i += 1
+    return (t_params, new_q_params_list)
 
 
+def numerical_sync(q_params_list, frequency = 0.7):
+    '''
+    This method synchronizes motion given a frequency (Default t=1/100).
+    '''
+    synchronized = time_sync(q_params_list)
+    
+    new_q_params_list = []
+    t = synchronized[0]
+    tau = (int((t[1] / frequency)) + 1) * frequency
+    tb = (int(((t[2] - t[1]) / frequency)) + 1) * frequency
+    tf = 2 * tb + tau
+    T = tf - tb
+    print(f"Total time increased from {t[3]} to {tf}s")
+    new_t_params_list = [t[0], tau, T, tf]
+
+    for p in synchronized[1]:
+        dq_new = (p[1] - p[0]) / T
+        ddq_new = dq_new / tb
+        new_q_params_list.append([p[0], p[1], dq_new, ddq_new])
+    return (new_q_params_list, new_t_params_list)
+        
     
     
 
-q_params1 = [0, 90, 8, 4]
+q_params1 = [0, 90, 6, 4]
 q_params2 = [10, 170, 7, 5]
 q_params3 = [50, 100, 7, 4]
 q_params4 = [0, 270, 6, 4]
@@ -155,5 +181,6 @@ t0 = 0
 q_params_list = [q_params1, q_params2, q_params3, q_params4, q_params5, q_params6]
 for p in q_params_list:
     pass
-time_sync(q_params_list)
+
+test = numerical_sync(q_params_list)
 
