@@ -1,0 +1,225 @@
+\documentclass{article}
+\usepackage{graphicx}
+\graphicspath{ {c:/users/Nils Becker/downloads/} }
+\usepackage{amsmath}
+
+\title{Report Assignment III - Trajectory Control}
+\date{Fundamentals of Robotics - FS 2021\\-\\November 26$^{th}$ 2021}
+\author{Nils Becker}
+
+\begin{document}
+  \maketitle
+  \newpage
+  \section{Minimum Time Trajectory}
+	Given $q_{0}$, $q_{f}$, $\dot{q}_{max}^{joint}$ and $\ddot{q}_{max}^{joint}$, the fastest trajectory for a single joint will either be of triangular (1) or of trapezodial (2) profile. \\
+	\\
+	\begin{equation}
+	\dot{q}_{max}^{joint} \leq \sqrt{\ddot{q}_{max}^{joint} * (q_{f} - q_{0})}
+	\end{equation}\\\\
+	\begin{equation}
+	\dot{q}_{max}^{joint} > \sqrt{\ddot{q}_{max}^{joint} * (q_{f} - q_{0})}
+	\end{equation}\\\\
+	
+	\subsection{Triangular Trajectory}
+	
+	To find the time $t_{b}$, where the joint will stop accelerating and start deaccelerating we solve:\\\\
+	\begin{equation}
+	t_{b} = \sqrt{\frac{q_{f} - q_{0}}{\dot{q}}_{max}}
+	\end{equation}\\\\
+	From $t_{b}$ we can find the final time:\\\\
+	\begin{equation}
+	t_{f} = 2 t_b
+	\end{equation} \\\\
+	The angle at a specific point in time $t_{0}\leq t \leq t_{f}$ is given by:\\\\
+	\begin{equation}
+	q(t) =
+\left\{
+	\begin{array}{ll}
+		q_{0}+\frac{1}{2}\ddot{q}_{max}t^{2}  & \mbox{if } t_{0}\leq t \leq t_{b} \\\\
+		q_{f}+\frac{1}{2}\ddot{q}_{max}(t-t_{f})^{2} & \mbox{if }t_{b}\leq t \leq t_{f}
+	\end{array}
+\right.
+	\end{equation}
+	\newpage
+	\subsection{Trapeziodial Trajectory}
+	In contrast to a triangular trajectory, the joint will move with $\dot{q}_{max}$ for a time span $\tau$. As here it is guaranteed to hit $\dot{q}_{max}$, $t_{b}$ will be found:\\\\
+	\begin{equation}
+	t_{b} = \frac{\dot{q}_{max}}{\ddot{q}_{max}}
+	\end{equation}\\\\
+	We find $T$, the point where the joint will start to deaccelerate:\\\\
+	\begin{equation}
+	T = \frac{q_{f} - q_{f}}{\dot{q}_{max}}
+	\end{equation}\\\\
+	As a trapez is symmetrical, we get the final time as:\\\\
+	\begin{equation}
+	t_{f} = T + t_{b}
+	\end{equation}\\\\
+	The time span of maximum velocity is given by:\\\\
+	\begin{equation}
+	\tau = T - t_{b}
+	\end{equation}\\\\
+	Finally, the angle at a specific point in time $t_{0}\leq t \leq t_{f}$ is given by:\\\\
+	\begin{equation}
+	q(t) =
+\left\{
+	\begin{array}{ll}
+		q_{0}+\frac{1}{2}\ddot{q}_{max}t^{2}  & \mbox{if } t_{0}\leq t \leq t_{b} \\\\
+		q_{0}+\frac{1}{2}t_{max}^{2}+ \dot{q}_{max}(t-t_{b}) & \mbox{if } t_{b}\leq t \leq T \\\\
+		q_{f}+\frac{1}{2}\ddot{q}_{max}(t-t_{f})^{2} & \mbox{if }T\leq t \leq t_{f}
+	\end{array}
+\right.
+	\end{equation}
+	\newpage
+	\section{Synchronization}
+	\subsection{Abstract}
+	As most robots consist of more than one joint, the motion of the $n$ joints must be synchronized, so that all joints finish thir motion at the same time. To archieve this, the acceleration and velocities may need to be adjusted. 
+	\subsection{Prodecure}
+	First of all the trajectories of all joint moving independently must be calculated to obtain their rise time $t_b$ and their $\tau$. As the robot is only as fast as the slowest part in each aspect, we get the new parameters as:
+	\begin{equation}
+	t_{b}^{new} = max(t_{b}^{i}), 1\leq i \leq n
+	\end{equation}
+	\begin{equation}
+	\tau_{new} = max({\tau_i}), 1\leq i \leq n
+	\end{equation}
+	The total motion time follows as:
+	\begin{equation}
+	t_{f}^{new} = 2t_{b}^{new}+\tau_{new}
+	\end{equation}
+	For each joint calculate their new velocities and accelerations as:
+	\begin{equation}
+	\dot{q}_{max}^{new} = \frac{q_f-q_0}{t_f-t_b}
+	\end{equation}
+	\begin{equation}
+	\ddot{q}_{max}^{new} = \frac{\dot{q}_{new}}{t_b}
+	\end{equation}
+	\section{Numerical Optimization}
+	\subsection{Abstact}
+	As robots excecute tasks in cycles with a specific frequency, the commands for accelerate and deaccelerate should be adapted to the frequency on instructions. This may increase the time, the robot needs to perform a move, but ensures, that everything will be executed correctly. The frequency $f$ defines the time, between to commands.
+	\newpage
+	\subsection{Procedure}
+	The new $t_b$ will be to next cycle. We calculate:
+	\begin{equation}
+	t_{b}^{num} = (\lfloor \frac{T-\tau}{f}\rfloor + 1) * f
+	\end{equation}
+	To calculate the new $\tau$ we use:
+	\begin{equation}
+	\tau_{num} = (\lfloor \frac{\tau}{f}\rfloor +1)*f
+	\end{equation}
+	Note, that $T$ and $\tau$ in (16), (17) are used from the non-optimized trajectory.\\\\
+	From this equations we can find:
+	\begin{equation}
+	T_{num} = t_{n}^{num} + \tau_{num}
+	\end{equation}
+	And
+	\begin{equation}
+	t_{f}^{num} = 2t_{b}^{num} + T_{num}
+	\end{equation}
+	As velocities and acceleration will most likely change, we calculate the new values as:
+	\begin{equation}
+	\dot{q}_{num}^{max} = \frac{t_f-t_0}{T_{new}}
+	\end{equation}
+	And
+	\begin{equation}
+	\ddot{q}_{num}^{max} = \frac{\dot{q}_{num}^{max}}{t_{b}^{new}}
+	\end{equation}
+	Finding the angle at a specfic point in time $t_{0}\leq t \leq t_{f}^{num}$ is almost the same as in a "normal" trapeziodial trajectory:\\\\
+	\begin{equation}
+	q(t) =
+\left\{
+	\begin{array}{ll}
+		q_{0}+\frac{1}{2}\ddot{q}_{max}^{num}t^{2}  & \mbox{if } t_{0}\leq t \leq t_{b}^{num} \\\\
+		q_{0}+\frac{1}{2}t_{max}{num}^{2}+ \dot{q}_{max}^{num}(t-t_{b}^{num}) & \mbox{if } t_{b}6^{num}\leq t \leq T^{num} \\\\
+		q_{f}+\frac{1}{2}\ddot{q}_{max}^{num}(t-t_{f}^{num})^{2} & \mbox{if }T^{num}\leq t \leq t_{f}^{num}
+	\end{array}
+\right.
+	\end{equation}
+	\newpage
+	\section{3 Point Trajectory}
+	\subsection{Abstract}
+	Here the robot will move from a point A to a point C passing through point B. In this case the robot will come to a stop at point B ($\dot{q}_{t_{B}} = 0)$, even though in practical use it is always better to keep a steady velocity throughout the trajectory. Furthermore only one joint will be moving to bring the robot from A to C.
+	\subsection{Computuation}
+	\subsubsection{Constrains}
+	\begin{equation}
+	q(t_{A})= \theta_{A}
+	\end{equation}
+	\begin{equation}
+	q(t_{C})= \theta_{C}
+	\end{equation}
+	\begin{equation}
+	\dot{q}(t_{A})= 0
+	\end{equation}
+	\begin{equation}
+	\dot{q}(t_{C})= 0
+	\end{equation}
+	\subsubsection{Symbolic equations}
+	Since we have 4 constrains, they can only be satisfied by at least a 3$^{rd}$ order polynomial. We get:
+	\begin{equation}
+	q(t) = a_0 +a_1t+a_2t^2+a_3t^3
+	\end{equation}
+	\begin{equation}
+	\dot{q}(t) = a_1+2a_2t+a_3t^2
+	\end{equation}
+	\begin{equation}
+	\ddot{q}(t) = 2a_2+6a_3t
+	\end{equation}
+	Solving these eqations from point A to B and then from B to C will get us the trajectory from A to C via B.
+	\subsection{Examplary procedure}
+	In this example, we move joint 1 of the robot from $q_0 = 2^{\circ}$ to $q_f = -10^{\circ}$ via $q_b = 15^{\circ}$. The needed time should be $t_{AB} = t_{BC} = 2s$. This example will also be in the submitted code.
+	\subsubsection{A - B}
+	Solving for t = 0, gives:
+	\begin{equation}
+	q(0)=q_0=2 = a_0 +a_1(0)+a_2(0^2)+a_3(0^3)
+	\end{equation}
+	\begin{equation}
+	\dot{q}(0) = 0=a_1+2a_2(0)+3a_3(0^2)
+	\end{equation}
+	We get $a_0=2$ and $a_1=0$. To get $a_3$ and $a_4$ we solve for t=2:
+	\begin{equation}
+	q(2)=q_b=15=2+a_2(2^2)+a_3(2^3)
+	\end{equation}
+	\begin{equation}
+	\dot{q}(2)=0=2a_2(2)+3a_3(2^2)
+	\end{equation}
+	We get $a_2=9.75$ and $ a_3=-3.25$
+	\subsubsection{B - C}
+	Applying the same calculations for the trajectory from B to C we get $\tilde{a}_0=15$, $\tilde{a}_1=0$, $\tilde{a}_2=-18.75$, $\tilde{a}_3=6.25$
+	\subsubsection{Final Trajectory}
+	Putting all of this toghether we get the following trajectory for $0\leq t\leq 2$:
+	 \begin{equation}
+	q(t) = 2+9.75t^2-3.25t^3
+	\end{equation}
+	\begin{equation}
+	\dot{q}(t) = 19.5t-9.75t^2
+	\end{equation}
+	\begin{equation}
+	\ddot{q}(t) = 19.5-19.5t
+	\end{equation}
+	And for $2 < t \leq 4$:
+	\begin{equation}
+	q(t) = 15+-18.75(t-t_b)^2+6.25(t-t_b)^3
+	\end{equation}
+	\begin{equation}
+	\dot{q}(t) = -37.5(t-t_b)+18.75(t-t_b)^2
+	\end{equation}
+	\begin{equation}
+	\ddot{q}(t) = -37.5+37.5(t-t_b)
+	\end{equation}
+	This will result in the following plot:\\\\
+	\includegraphics[scale=0.4]{pic1} 
+	\newpage
+	\section{Code Annotations}
+	As my code does not follow the provided code skeleton for every method, I will provide a brief overview of the methods. At the bottom of the submitted Python file, you will find test-dummies which can be used to display the solution.
+	\subsection{Trajectory Time}
+	This method is equivalent to the skeleton.
+	\subsection{Time Sync}
+	This method will calculate $\dot{q}_{max}^{new}$ and $\ddot{q}_{max}^{new}$ for each joint and will return a updated q params list as well as calculate, update and return the new time parameters. Parameters are a list of all q parameters.
+	\subsection{Numerical Sync}
+	This method will firstly synchronize all trajecories using time sync. After that new time parameters will be calcualted depending on the frequency of instructions. With the new time parameters, the $\dot{q}_{max}^{num}$ and $\ddot{q}_{max}^{num}$ are calculated. The method will return the new time parameters as well as a list of updated q parameters for each joint. Parameters are a list of all q parameters as well as the frequency of instructions (if no frequency is given the default of $\frac{1}{100}$ will be used).
+	\subsection{Trapeziodal Trajectory}
+	This method is equivalent to the skeleton.
+	\subsection{Plot Trajectory}
+	This method plots a TRIANGULAR or TRAPEZODIAL trajecory. It will get all relevant points to plot from trapeziodal trajectory. Note, that this method will only display $q(t),\dot{q}$ and $\ddot{q}$ for a single joint. This method returns nothing and takes the q - and t parameters as parameters.
+	 \subsection{3p Trajectory}
+	 This method will calculate a trajectory of a joint between 2 points by passing another point on the way. It will automatically plot the trajectory automatically and will return nothing. Parameters are: The q parameters of the joint, the value of the position to be passed in degrees, as well as $t_0$, $t_b$ and $t_f$
+	  
+	\end{document}
