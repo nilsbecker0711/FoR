@@ -1,5 +1,6 @@
 import numpy as np
 from numpy import pi, sqrt
+from sympy import symbols, solve, linsolve
 from matplotlib.pyplot import *
 
 def trapezoidal_trajectory(q_param, t_param):
@@ -41,6 +42,15 @@ def trapezoidal_trajectory(q_param, t_param):
         v.append(vi) 
         a.append(ai)
 
+    return t, q, v, a
+
+
+def plot_trajecory(q_params, t_params):
+
+    _, tau, T, tf = t_params
+    tb = T - tau
+    _, qf, dq_m, _ = q_params
+    t, q, v, a = trapezoidal_trajectory(q_params, t_params)
     figure(figsize=(16,16))
     subplot(312)
     plot(t,v, linewidth=2, label="v")
@@ -78,8 +88,6 @@ def trapezoidal_trajectory(q_param, t_param):
     legend()
 
     show()
-
-    return t, q, v, a
 
 def trajectory_time(q_params, t0):
     '''
@@ -146,7 +154,7 @@ def time_sync(q_params_list):
     return (t_params, new_q_params_list)
 
 
-def numerical_sync(q_params_list, frequency = 0.7):
+def numerical_sync(q_params_list, frequency = 0.01):
     '''
     This method synchronizes motion given a frequency (Default t=1/100).
     '''
@@ -166,8 +174,27 @@ def numerical_sync(q_params_list, frequency = 0.7):
         ddq_new = dq_new / tb
         new_q_params_list.append([p[0], p[1], dq_new, ddq_new])
     return (new_q_params_list, new_t_params_list)
-        
-    
+
+def three_p_trajecory(q_params, qb, t):
+    '''
+    Method to move the robot from A to C through B. For explination, please view the report.
+    :param q_params: Specifies q0, qf, dq_max and dd/q_max
+    :param qb, Specifies the position at point B in degrees
+    :param: t: Specifies t0, tb, and tf, -> the times of each position
+    '''
+    q0, qf, dq, ddq = q_params
+     
+    a, b, c, d, x= symbols('a b c d x')
+    #calculating A->B
+    t0 = t[0]     
+    a0 = solve(a-q0 + b*t0 +c*t0**2+ d*t0**3, a)
+    a1 = solve(b + 2*c*t0+ 3*d*t0**2, b)
+    t0 = t[1]
+    for a in a0:
+        for b in a1:
+            solution, = linsolve([a-qb + b + c*t0**2+ d*t0**3, b + 2*c*t0+ 3*d*t0**2], (c, d))
+            a2 = solution[0]
+            a3 = solution[1]
     
 
 q_params1 = [0, 90, 6, 4]
@@ -182,5 +209,10 @@ q_params_list = [q_params1, q_params2, q_params3, q_params4, q_params5, q_params
 for p in q_params_list:
     pass
 
-test = numerical_sync(q_params_list)
-
+#test = numerical_sync(q_params_list)
+#plot_trajecory(q_params1, trajectory_time(q_params1, 0))
+x = symbols('x')
+a, b, c, d= symbols('a b c d')
+t= 0
+#print(solve(a-5+b*t, a))
+three_p_trajecory([2,0,0,0], 15, [0,2,4])
