@@ -201,7 +201,10 @@ def s_calc_angular_vel():
         jac.append(matrix)
     return jac
 
-def s_inertia():
+def inertia(sym):
+    '''
+    Computes I matrix
+    '''
     ixx1, ixy1, ixz1, iyx1,iyy1,iyz1,izx1,izy1,izz1 = var(" ixx1 ixy1 ixz1 iyx1 iyy1 iyz1 izx1 izy1 izz1")
     ixx2, ixy2, ixz2, iyx2,iyy2,iyz2,izx2,izy2,izz2 = var(" ixx2 ixy2 ixz2 iyx2 iyy2 iyz2 izx2 izy2 izz2")
     ixx3, ixy3, ixz3, iyx3,iyy3,iyz3,izx3,izy3,izz3 = var(" ixx3 ixy3 ixz3 iyx3 iyy3 iyz3 izx3 izy3 izz3")
@@ -219,18 +222,15 @@ def s_inertia():
     inertias = [i1,i2,i3,i4,i5,i6]
     matrices = []
     for values in inertias:
-        matrix = Matrix([[values[0], 0, 0], [0, values[4], 0], [0, 0, values[8]]])
+        matrix = Matrix([[values[0],0, 0], [0, values[4], 0], [0, 0, values[8]]])
         matrices.append(matrix)
     return matrices
-
-
-def euler_lagrange(q,l,lc,m):
-    s_calc_m()
 
 def s_calc_m():
     '''
     Checks if all symblic calculations are correct
     :returns True if m_q is symmetric -> indicates correct calculations, False otherwise
+             m_q matrix
     '''
     q1, q2 , q3, q4, q5, q6 = var("q1 q2 q3 q4 q5 q6") 
     m1, m2, m3, m4, m5, m6 = var("m1 m2 m3 m4 m5 m6")
@@ -238,7 +238,7 @@ def s_calc_m():
     m = [m1, m2, m3, m4, m5, m6]
     linear_vel = s_calc_linear_vel(s_calc_positions())
     ang_vel =s_calc_angular_vel()
-    s_inertias = s_inertia()
+    s_inertias = inertia(True)
     m_q = Matrix([[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0]])
     for i in range(len(m)):
         if i == 0 or i == 3 or i == 5:
@@ -250,12 +250,64 @@ def s_calc_m():
         rot.col_del(3)
         rot.row_del(3)
         m_q = m_q + m[i] * linear_vel[i].T * linear_vel[i] + (ang_vel[i].T*rot) * s_inertias[i] * (rot.T*ang_vel[i])
+
     #verify m -> Symmetry check
     if (m_q.is_symmetric()):
         print("M(q) is symmetric -> All calculations seem correct :)")
-        return True
+        return (True, m_q)
     else:
         print("False calculation, M(q) is NOT symmetric!")
-        return False
+        return (False, m_q)
+
+def s_c_symb(m,i,j,k):
+    q1, q2 , q3, q4, q5, q6 = var("q1 q2 q3 q4 q5 q6") 
+    q = [q1, q2 , q3, q4, q5, q6]
+    c = m[i+j*6].diff(q[k]) + m[i+k*6].diff(q[j]) - m[j+6*k].diff(q[i])
+    return c
+
+def s_calc_c(m):
+    '''
+    Calculates the c matrix symbolically. 
+    :param i: symbolical m matrix
+    '''
+    c = Matrix([[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0]])
+    for i in range(6):
+        for j in range (6):
+            runner=0
+            for k in range(6):
+                runner = runner + s_c_symb(m,i,j,k)
+        c[i+j*6] = runner
+    return c
+
+def s_calc_g(m):
+    '''
+    param m: m1-m6
+    '''
+    lin_vel = s_calc_linear_vel(s_calc_positions())
+    gr = Matrix([[0],[0],[-9.81]]) # gravity : +/- -9.81 in opposite of z-direction
+    g = []
+    for i in range(len(m)):
+        start = 0
+        jvs = []
+        for j in range(6):
+            jvs.append(Matrix([lin_vel[i][j], lin_vel[i][j+6], lin_vel[i][j+12]]))
+        for k in range(len(jvs)):
+            start = start - (jvs[k].T * (m[k]*gr))[0] #[0]-> bc, 1x1 matrix
+        g.append(start)
+    g_matrix = Matrix([g[0],g[1],g[2],g[3],g[4],g[5]]).T
+    print(g_matrix.shape)
+
+def euler_lagrange(q,l,lc,m):
+    mq = s_calc_m()
+    c = s_calc_c(mq[1]) #this may take a while
+    g = s_calc_g(m)
+    #Compelty symbolical model
+    dq1,dq2,dq3,dq4,dq5,dq6 = var("dq1 dq2 dq3 dq4 dq5 dq6")
+    dq = Matrix([dq1,dq2,dq3,dq4,dq5,dq6]).T
+    ddq1,ddq2,ddq3,ddq4,ddq5,ddq6 = var("ddq1 ddq2 ddq3 ddq4 ddq5 ddq6")
+    ddq = Matrix([ddq1,ddq2,ddq3,ddq4,ddq5,ddq6])
+    s_tau = mq[1]*ddq + c*dq + g
+    print(s_tau.shape)
+
 
 euler_lagrange(1,1,1,[1,1,1,1,1,1])
