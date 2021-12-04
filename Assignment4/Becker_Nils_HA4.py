@@ -201,28 +201,21 @@ def s_calc_angular_vel():
         jac.append(matrix)
     return jac
 
-def inertia(sym):
+def inertia():
     '''
     Computes I matrix
     '''
-    ixx1, ixy1, ixz1, iyx1,iyy1,iyz1,izx1,izy1,izz1 = var(" ixx1 ixy1 ixz1 iyx1 iyy1 iyz1 izx1 izy1 izz1")
-    ixx2, ixy2, ixz2, iyx2,iyy2,iyz2,izx2,izy2,izz2 = var(" ixx2 ixy2 ixz2 iyx2 iyy2 iyz2 izx2 izy2 izz2")
-    ixx3, ixy3, ixz3, iyx3,iyy3,iyz3,izx3,izy3,izz3 = var(" ixx3 ixy3 ixz3 iyx3 iyy3 iyz3 izx3 izy3 izz3")
-    ixx4, ixy4, ixz4, iyx4,iyy4,iyz4,izx4,izy4,izz4 = var(" ixx4 ixy4 ixz4 iyx4 iyy4 iyz4 izx4 izy4 izz4")
-    ixx5, ixy5, ixz5, iyx5,iyy5,iyz5,izx5,izy5,izz5 = var(" ixx5 ixy5 ixz5 iyx5 iyy5 iyz5 izx5 izy5 izz5")
-    ixx6, ixy6, ixz6, iyx6,iyy6,iyz6,izx6,izy6,izz6 = var(" ixx6 ixy6 ixz6 iyx6 iyy6 iyz6 izx6 izy6 izz6")
-
-    i1 = [ixx1, ixy1, ixz1, iyx1,iyy1,iyz1,izx1,izy1,izz1]
-    i2 = [ixx2, ixy2, ixz2, iyx2,iyy2,iyz2,izx2,izy2,izz2]
-    i3 = [ixx3, ixy3, ixz3, iyx3,iyy3,iyz3,izx3,izy3,izz3]
-    i4 = [ixx4, ixy4, ixz4, iyx4,iyy4,iyz4,izx4,izy4,izz4]
-    i5 = [ixx5, ixy5, ixz5, iyx5,iyy5,iyz5,izx5,izy5,izz5]
-    i6 = [ixx6, ixy6, ixz6, iyx6,iyy6,iyz6,izx6,izy6,izz6]
+    i1 = [var("Ixx1"), var("Iyy1"), var("Izz1")]
+    i2 = [var("Ixx2"), var("Iyy2"), var("Izz2")]
+    i3 = [var("Ixx3"), var("Iyy3"), var("Izz3")]
+    i4 = [var("Ixx4"), var("Iyy4"), var("Izz4")]
+    i5 = [var("Ixx5"), var("Iyy5"), var("Izz5")]
+    i6 = [var("Ixx6"), var("Iyy6"), var("Izz6")]
 
     inertias = [i1,i2,i3,i4,i5,i6]
     matrices = []
     for values in inertias:
-        matrix = Matrix([[values[0],0, 0], [0, values[4], 0], [0, 0, values[8]]])
+        matrix = Matrix([[values[0],0, 0], [0, values[1], 0], [0, 0, values[2]]])
         matrices.append(matrix)
     return matrices
 
@@ -238,7 +231,7 @@ def s_calc_m():
     m = [m1, m2, m3, m4, m5, m6]
     linear_vel = s_calc_linear_vel(s_calc_positions())
     ang_vel =s_calc_angular_vel()
-    s_inertias = inertia(True)
+    s_inertias = inertia()
     m_q = Matrix([[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0]])
     for i in range(len(m)):
         if i == 0 or i == 3 or i == 5:
@@ -277,12 +270,16 @@ def s_calc_c(m):
             for k in range(6):
                 runner = runner + s_c_symb(m,i,j,k)
         c[i+j*6] = runner
+        print("Still calculating c(q,dq)...")
+    print("Finished calculation c(q,dq)")
     return c
 
-def s_calc_g(m):
+def s_calc_g():
     '''
-    param m: m1-m6
+    Calculates gravity vector symbolically
     '''
+    m1,m2,m3,m4,m5,m6 = var("m1 m2 m3 m4 m5 m6")
+    m = [m1,m2,m3,m4,m5,m6]
     lin_vel = s_calc_linear_vel(s_calc_positions())
     gr = Matrix([[0],[0],[-9.81]]) # gravity : +/- -9.81 in opposite of z-direction
     g = []
@@ -294,20 +291,30 @@ def s_calc_g(m):
         for k in range(len(jvs)):
             start = start - (jvs[k].T * (m[k]*gr))[0] #[0]-> bc, 1x1 matrix
         g.append(start)
-    g_matrix = Matrix([g[0],g[1],g[2],g[3],g[4],g[5]]).T
-    print(g_matrix.shape)
+    g_matrix = Matrix([g[0],g[1],g[2],g[3],g[4],g[5]])
+    return g_matrix
 
-def euler_lagrange(q,l,lc,m):
+def s_euler_lagrange():
+    '''
+    Calculates Euler Lagrange symbolically
+    '''
     mq = s_calc_m()
-    c = s_calc_c(mq[1]) #this may take a while
-    g = s_calc_g(m)
-    #Compelty symbolical model
+    #print(mq[1])
+    c = s_calc_c(mq[1]) #this may take a while, due to the symbolic derivation of very long terms
+    #print(c)
+    g = s_calc_g()
+    #print(g)
+    
+    #Compelte symbolical model
     dq1,dq2,dq3,dq4,dq5,dq6 = var("dq1 dq2 dq3 dq4 dq5 dq6")
-    dq = Matrix([dq1,dq2,dq3,dq4,dq5,dq6]).T
+    dq = Matrix([dq1,dq2,dq3,dq4,dq5,dq6])
     ddq1,ddq2,ddq3,ddq4,ddq5,ddq6 = var("ddq1 ddq2 ddq3 ddq4 ddq5 ddq6")
     ddq = Matrix([ddq1,ddq2,ddq3,ddq4,ddq5,ddq6])
+
     s_tau = mq[1]*ddq + c*dq + g
-    print(s_tau.shape)
+
+    return s_tau
+    
 
 
-euler_lagrange(1,1,1,[1,1,1,1,1,1])
+#print(s_euler_lagrange())

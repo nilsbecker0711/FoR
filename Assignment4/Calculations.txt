@@ -1,0 +1,26 @@
+lc1 = [0;0;l1;1]
+
+pos2 =[l2*cos(q1)*sin(q2); l2*sin(q1)*sin(q2); l1 + l2*cos(q2)]
+p2x1 =-l2*sin(q1)*sin(q2)
+p2x2 = l2*cos(q1)*cos(q2)
+p2y1 = l2*cos(q1)*sin(q2)
+p2y2 = l2*cos(q2)*sin(q1)
+p2z1 = 0
+p2z2 = -l2*sin(q2)
+
+pos3 = [lc3*(cos(q1)*cos(q2)*sin(q3) + cos(q1)*cos(q3)*sin(q2)) + l2*cos(q1)^2*sin(q2) - l2*sin(q1)^2*sin(q2);
+	lc3*(cos(q2)*sin(q1)*sin(q3) + cos(q3)*sin(q1)*sin(q2)) + l2*cos(q1)*sin(q1)*sin(q2) + l2*cos(q2)*sin(q1)*sin(q2);
+	l1 + lc3*(cos(q2)*cos(q3) - sin(q2)*sin(q3)) + l2*cos(q2)]
+p3x1= -lc3*(cos(q2)*sin(q1)*sin(q3) + cos(q3)*sin(q1)*sin(q2)) - 4*l2*cos(q1)*sin(q1)*sin(q2)
+p3x2 = lc3*(cos(q1)*cos(q2)*cos(q3) - cos(q1)*sin(q2)*sin(q3)) + l2*cos(q1)^2*cos(q2) - l2*cos(q2)*sin(q1)^2
+p3x3 = lc3*(cos(q1)*cos(q2)*cos(q3) - cos(q1)*sin(q2)*sin(q3))
+
+p3y1 = lc3*(cos(q1)*cos(q2)*sin(q3) + cos(q1)*cos(q3)*sin(q2)) + l2*cos(q1)^2*sin(q2) - l2*sin(q1)^2*sin(q2) + l2*cos(q1)*cos(q2)*sin(q2)
+p3y2 = l2*cos(q2)^2*sin(q1) - lc3*(sin(q1)*sin(q2)*sin(q3) - cos(q2)*cos(q3)*sin(q1)) - l2*sin(q1)*sin(q2)^2 + l2*cos(q1)*cos(q2)*sin(q1)
+p3y3 = -lc3*(sin(q1)*sin(q2)*sin(q3) - cos(q2)*cos(q3)*sin(q1))
+
+p3z1 = 0
+p3z2 = - lc3*(cos(q2)*sin(q3) + cos(q3)*sin(q2)) - l2*sin(q2)
+p3z3 = -lc3*(cos(q2)*sin(q3) + cos(q3)*sin(q2))
+
+pos4
