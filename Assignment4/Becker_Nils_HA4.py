@@ -98,9 +98,9 @@ def s_calc_positions():
     :param lc: List contaning the vectors from joints to CoM
     '''
     q1,q2,q3,q4,q5,q6 = var('q1 q2 q3 q4 q5 q6')
-    l1,l2,l3,l4,l4,l6 = var("l1 l2 l3 l4 l5 l6")
+    l1,l2,l3,l4,l5,l6 = var("l1 l2 l3 l4 l5 l6")
     lc1,lc2,lc3,lc4,lc5,lc6= var("lc1 lc2 lc3 lc4 lc5 lc6")
-    l = [l1,l2,l3,l4,l4,l6]
+    l = [l1,l2,l3,l4,l5,l6]
     lc = [lc1,lc2,lc3,lc4,lc5,lc6]
     for i in range(len(l)):
         l[i] = strans([0,0,l[i]]).col(-1)
@@ -156,21 +156,106 @@ def s_calc_linear_vel(pos):
     for i in range(len(pos)):
         for j in range(len(q)):
             for k in range(3):
-                der.append(pos[i][k].diff(q[j]))
+                der.append(pos[i][k].diff(q[j])) # get differentials for all positions for x,y,z
             jac.append(der)
             der = []
         all_jac.append(jac)
         jac = []
     matrix_jac = []
     for i in range(len(all_jac)):
-        matrix_jac.append(Matrix([all_jac[i][0],all_jac[i][1],all_jac[i][2],all_jac[i][3],all_jac[i][4],all_jac[i][5]]))
+        matrix_jac.append(Matrix([all_jac[i][0],all_jac[i][1],all_jac[i][2],all_jac[i][3],all_jac[i][4],all_jac[i][5]]).T)
     return matrix_jac
 
+def s_calc_angular_vel():
+    ''''
+    Gives a list of all Jw matrices
+    '''
+    #get symbolic FK solution
+    q1,q2,q3,q4,q5,q6 = var('q1 q2 q3 q4 q5 q6')
+    l1,l2,l3,l4,l5,l6 = var("l1 l2 l3 l4 l5 l6")
+    t1 = srotz(q1)*strans([0,0,l1])
+    t2 = t1*sroty(q2)*strans([0,0,l2])
+    t3 = t2*sroty(q3)*strans([0,0,l3])
+    t4 = t3*srotz(q4)*strans([0,0,l4])
+    t5 = t4*srotx(q5)*strans([0,0,l5])
+    t6 = t5*srotz(q6)*strans([0,0,l6]) #EE
+    transformations = [t1,t2,t3,t4,t5,t6]
+
+    #get symbolic angular velocities
+    rotation_axis = [[0,0,1]]
+    rotation_axis.append([t2[1],t2[5],t2[9]]) #y
+    rotation_axis.append([t3[1],t3[5],t2[9]]) #y
+    rotation_axis.append([t4[2],t4[6],t2[10]]) #z
+    rotation_axis.append([t5[0],t5[4],t5[8]]) #x
+    rotation_axis.append([t6[2],t6[6],t6[10]]) #z
+    
+    #get angular velocities matrices
+    jac = []
+    for i in range(len(rotation_axis)):
+        matrix = Matrix(rotation_axis[0])
+        for j in range(1, len(rotation_axis)):
+            if j <= i:
+                matrix =matrix.col_insert(j, Matrix(rotation_axis[j]))
+            else:
+                matrix = matrix.col_insert(j, Matrix([0,0,0]))  
+        jac.append(matrix)
+    return jac
+
+def s_inertia():
+    ixx1, ixy1, ixz1, iyx1,iyy1,iyz1,izx1,izy1,izz1 = var(" ixx1 ixy1 ixz1 iyx1 iyy1 iyz1 izx1 izy1 izz1")
+    ixx2, ixy2, ixz2, iyx2,iyy2,iyz2,izx2,izy2,izz2 = var(" ixx2 ixy2 ixz2 iyx2 iyy2 iyz2 izx2 izy2 izz2")
+    ixx3, ixy3, ixz3, iyx3,iyy3,iyz3,izx3,izy3,izz3 = var(" ixx3 ixy3 ixz3 iyx3 iyy3 iyz3 izx3 izy3 izz3")
+    ixx4, ixy4, ixz4, iyx4,iyy4,iyz4,izx4,izy4,izz4 = var(" ixx4 ixy4 ixz4 iyx4 iyy4 iyz4 izx4 izy4 izz4")
+    ixx5, ixy5, ixz5, iyx5,iyy5,iyz5,izx5,izy5,izz5 = var(" ixx5 ixy5 ixz5 iyx5 iyy5 iyz5 izx5 izy5 izz5")
+    ixx6, ixy6, ixz6, iyx6,iyy6,iyz6,izx6,izy6,izz6 = var(" ixx6 ixy6 ixz6 iyx6 iyy6 iyz6 izx6 izy6 izz6")
+
+    i1 = [ixx1, ixy1, ixz1, iyx1,iyy1,iyz1,izx1,izy1,izz1]
+    i2 = [ixx2, ixy2, ixz2, iyx2,iyy2,iyz2,izx2,izy2,izz2]
+    i3 = [ixx3, ixy3, ixz3, iyx3,iyy3,iyz3,izx3,izy3,izz3]
+    i4 = [ixx4, ixy4, ixz4, iyx4,iyy4,iyz4,izx4,izy4,izz4]
+    i5 = [ixx5, ixy5, ixz5, iyx5,iyy5,iyz5,izx5,izy5,izz5]
+    i6 = [ixx6, ixy6, ixz6, iyx6,iyy6,iyz6,izx6,izy6,izz6]
+
+    inertias = [i1,i2,i3,i4,i5,i6]
+    matrices = []
+    for values in inertias:
+        matrix = Matrix([[values[0], 0, 0], [0, values[4], 0], [0, 0, values[8]]])
+        matrices.append(matrix)
+    return matrices
+
+
 def euler_lagrange(q,l,lc,m):
-    calc_m(q,l,lc,m)
+    s_calc_m()
 
-def calc_m(q,l, lc, m):
+def s_calc_m():
+    '''
+    Checks if all symblic calculations are correct
+    :returns True if m_q is symmetric -> indicates correct calculations, False otherwise
+    '''
+    q1, q2 , q3, q4, q5, q6 = var("q1 q2 q3 q4 q5 q6") 
+    m1, m2, m3, m4, m5, m6 = var("m1 m2 m3 m4 m5 m6")
+    q = [q1, q2 , q3, q4, q5, q6]
+    m = [m1, m2, m3, m4, m5, m6]
     linear_vel = s_calc_linear_vel(s_calc_positions())
+    ang_vel =s_calc_angular_vel()
+    s_inertias = s_inertia()
+    m_q = Matrix([[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0]])
+    for i in range(len(m)):
+        if i == 0 or i == 3 or i == 5:
+            rot = srotz(q[i])
+        elif i == 1 or i == 2:
+            rot = sroty(q[i])
+        elif i == 4:
+            rot = srotx(q[i])
+        rot.col_del(3)
+        rot.row_del(3)
+        m_q = m_q + m[i] * linear_vel[i].T * linear_vel[i] + (ang_vel[i].T*rot) * s_inertias[i] * (rot.T*ang_vel[i])
+    #verify m -> Symmetry check
+    if (m_q.is_symmetric()):
+        print("M(q) is symmetric -> All calculations seem correct :)")
+        return True
+    else:
+        print("False calculation, M(q) is NOT symmetric!")
+        return False
 
-
-euler_lagrange(1,1,1,1)
+euler_lagrange(1,1,1,[1,1,1,1,1,1])
